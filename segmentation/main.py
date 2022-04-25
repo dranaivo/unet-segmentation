@@ -89,14 +89,6 @@ def main():
             # transforms.RandomCrop(opt.image_size)
         ])
 
-        # if args.test:
-        #     args.batchSize = 1
-        #     shuffle = False
-        #     phase = 'val'
-        # elif args.train:
-        #     shuffle = True
-        #     phase = 'train'
-
         shuffle = True
         phase = 'train'
         set_dataloader = DatasetCityscapes(opt=args, phase=phase, data_transform=data_transform)
@@ -201,14 +193,6 @@ def main():
                 transforms.ToTensor(),  # divides float version by 255
                 # transforms.CenterCrop(opt.image_size),
             ])
-
-            # if args.test:
-            #     args.batchSize = 1
-            #     shuffle = False
-            #     phase = 'val'
-            # elif args.train:
-            #     shuffle = True
-            #     phase = 'train'
 
             shuffle = False
             phase = 'val'
