@@ -125,49 +125,27 @@ class Engine():
             self.args.batch_size = 1
 
             # Load checkpoint
-            checkpoint = torch.load(glob.glob(join(args.path_to_checkpoints, "*latest*.pt"))[0])
-            network.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optim_state_dict'])
-            epoch = checkpoint['epoch']
+            epoch = self.load_checkpoint()
 
-            data_transform = transforms.Compose([
-                transforms.ToTensor(),  # divides float version by 255
-                # transforms.CenterCrop(opt.image_size),
-            ])
-
-            shuffle = False
-            phase = 'val'
-            set_dataloader = DatasetCityscapes(opt=args, phase=phase, data_transform=data_transform)
-            test_dataloader = torch.utils.data.DataLoader(set_dataloader, batch_size=args.batch_size, shuffle=shuffle,
-                                                           num_workers=args.n_threads, drop_last=True)
-            test_size = len(test_dataloader)
-            print(test_size)
-            network.eval()
-            progress_bar = tqdm.tqdm(range(len(test_dataloader)))
-            data_iter = iter(test_dataloader)
+            data_iter = iter(self.dataloader)
             total_iter = 0
-            global_cm = 0
-            accuracy_metric = AccuracyMetric(global_cm=global_cm)
-            if args.cuda:
-                network.to(args.cuda_device)
-            print('[Testing]')
-            for _ in progress_bar:
+            for _ in self.progress_bar:
                 # test_step
                 total_iter += 1
                 input, target = data_iter.next()
-                if args.cuda:
-                    input= input.to(args.cuda_device)
-                    target = target.to(args.cuda_device)
+                if self.args.cuda:
+                    input= input.to(self.args.cuda_device)
+                    target = target.to(self.args.cuda_device)
 
-                pred = network(input)
+                pred = self.network(input)
 
                 target_ = target.cpu().numpy()
                 pred_ = np.argmax(pred.cpu().numpy(), axis=1)
 
-                accuracy_metric.update_values(pred_, target_, list(range(args.output_nc)))
+                self.accuracy_metric.update_values(pred_, target_, list(range(self.args.output_nc)))
 
-            overall_acc, average_acc, average_iou = accuracy_metric.get_values()
+            overall_acc, average_acc, average_iou = self.accuracy_metric.get_values()
             message = '>>> Epoch[{}] {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
-            epoch,
-            'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
+                epoch,
+                'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
             print(message)
