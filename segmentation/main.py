@@ -152,13 +152,12 @@ def main():
                                 message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
                                     epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
                                     'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
-                                print(message)
                             else:
                                 overall_acc, average_acc, average_iou = 0, 0, 0
                                 message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
                                     epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
                                     'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
-                                print(message)
+                            print(message)
                     #
                 if args.save and epoch % args.save_epoch == 0:
                     print('Saving checkpoint')
