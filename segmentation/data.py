@@ -1,22 +1,16 @@
-import torch
-import torch.utils.data as data
-
-import numpy as np
-import random
-
-from PIL import Image
-import random
-
 import glob
 from os.path import join
+import random
 
-from PIL import ImageFile
-
+import numpy as np
+from PIL import Image, ImageFile
+import torch
+import torch.utils.data as data
 import torchvision.transforms as transforms
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-# Cityscapes Dataloader
+
 def load_img(filename, task='rgb'):
     image = Image.open(filename)
     return image

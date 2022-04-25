@@ -1,8 +1,7 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+import torch.nn as nn
 
-# Model definition
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
 
@@ -105,7 +104,3 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         return self.outc(x)
-
-if __name__ == "__main__":
-    model = UNet(3, 19)
-    print(model)

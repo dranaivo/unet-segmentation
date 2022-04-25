@@ -1,24 +1,15 @@
-# import libraries
+import glob
+from os.path import join
 import shutil
 
+import numpy as np
+from PIL import ImageFile
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import tqdm
+import torchvision.transforms as transforms
 
 from data import DatasetCityscapes
 from metrics import AccuracyMetric
-import numpy as np
-
-from PIL import Image
-import random
-
-import glob
-from os.path import join
-
-from PIL import ImageFile
-
-import torchvision.transforms as transforms
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -47,7 +38,6 @@ class Engine():
             phase = 'val'
             data_transform = transforms.Compose([
                 transforms.ToTensor(),  # divides float version by 255
-                # transforms.CenterCrop(opt.image_size),
             ])
             self.description = "[Testing]"
             self.global_cm = 0
@@ -86,7 +76,6 @@ class Engine():
                 data_iter = iter(self.dataloader)
                 total_iter = 0
                 for _ in self.progress_bar:
-                    # train_step
                     total_iter += 1
                     input, target = data_iter.next()
                     if self.args.cuda:
@@ -100,7 +89,7 @@ class Engine():
                     loss.backward()
                     self.optimizer.step()
 
-                    # Show semantic segmentation metrics
+                    # Display semantic segmentation metrics
                     if total_iter % self.args.print_metrics_iter == 0:
                         with torch.no_grad():
                             target_ = target.cpu().numpy()
@@ -111,7 +100,7 @@ class Engine():
                                 epoch, self.total_epochs, total_iter, len(self.dataloader), 'loss', loss.cpu().numpy(),
                                 'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
                             print(message)
-                    #
+
                 if self.args.save and epoch % self.args.save_epoch == 0:
                     filename = join(self.args.path_to_checkpoints, 'ckp_{}.pt'.format(epoch))
                     self.save_checkpoint(filename, epoch)
@@ -123,14 +112,10 @@ class Engine():
     def evaluate(self):
         with torch.no_grad():
             self.args.batch_size = 1
-
-            # Load checkpoint
             epoch = self.load_checkpoint()
-
             data_iter = iter(self.dataloader)
             total_iter = 0
             for _ in self.progress_bar:
-                # test_step
                 total_iter += 1
                 input, target = data_iter.next()
                 if self.args.cuda:
@@ -138,7 +123,6 @@ class Engine():
                     target = target.to(self.args.cuda_device)
 
                 pred = self.network(input)
-
                 target_ = target.cpu().numpy()
                 pred_ = np.argmax(pred.cpu().numpy(), axis=1)
 

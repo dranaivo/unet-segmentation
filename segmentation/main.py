@@ -1,33 +1,15 @@
 # import libraries
 import argparse
-import shutil
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.utils.data as data
-import tqdm
-
-from model import UNet
-from data import DatasetCityscapes
-from metrics import AccuracyMetric
-from engine import Engine
+import random
 import numpy as np
 
-from PIL import Image
-import random
+import torch
+import torch.nn.functional as F
+import torch.nn as nn
 
-import glob
-from os.path import join
+from engine import Engine
+from model import UNet
 
-from PIL import ImageFile
-from sklearn.metrics import confusion_matrix
-
-import torchvision.transforms as transforms
-
-ImageFile.LOAD_TRUNCATED_IMAGES = True
-
-# CLI
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', action='store_true', help='train')
@@ -63,16 +45,15 @@ def main():
     args = parse_arguments()
     system_setup(args)
 
-    # Create network
-    network = UNet(args.input_nc, args.output_nc)  # input channels, number of output classes
+    # Network
+    network = UNet(args.input_nc, args.output_nc)
     print(network)
 
-    # Create optimizer
+    # Loss and Otimizer
     loss_fn = nn.CrossEntropyLoss(ignore_index=250)
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
 
     engine = Engine(args, network, loss_fn, optimizer)
-    # Training function
     if args.train:
         engine.train()
     else:
