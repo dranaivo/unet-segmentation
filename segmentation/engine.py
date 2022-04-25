@@ -22,19 +22,6 @@ import torchvision.transforms as transforms
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-# def training_step(data_iter, network, loss_fn, optimizer, args):
-#     input, target = data_iter.next()
-#     if args.cuda:
-#         input = input.to(args.cuda_device)
-#         target = target.to(args.cuda_device)
-
-#     pred = network(input)
-#     loss = loss_fn(pred, target)
-
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
-
 class Engine():
     def __init__(self, args, network, loss_fn, optimizer):
         self.args = args
@@ -70,19 +57,30 @@ class Engine():
                                                            num_workers=args.n_threads, drop_last=True)
         print("Dataset size : ", len(self.dataloader))
         self.progress_bar = tqdm.tqdm(range(len(self.dataloader)))
+        self.progress_bar.set_description(self.description)
         self.total_epochs = args.total_epochs
         self.accuracy_metric = AccuracyMetric(global_cm=self.global_cm)
+
+    def save_checkpoint(self, filename, epoch):
+        print('Saving checkpoint')
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': self.network.state_dict(),
+            'optim_state_dict': self.optimizer.state_dict(),
+        }, filename)
+        shutil.copyfile(filename, join(self.args.path_to_checkpoints, 'ckp_latest.pt'))
 
     def load_checkpoint(self):
         checkpoint = torch.load(glob.glob(join(self.args.path_to_checkpoints, "*latest*.pt"))[0])
         self.network.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optim_state_dict'])
-        # epoch = checkpoint['epoch']
+        epoch = checkpoint['epoch']
         # loss = checkpoint['loss']
+        return epoch
 
     def train(self):
         if self.args.resume:
-            self.load_checkpoint()
+            epoch = self.load_checkpoint()
         try:
             for epoch in range(self.total_epochs):
                 data_iter = iter(self.dataloader)
@@ -115,24 +113,61 @@ class Engine():
                             print(message)
                     #
                 if self.args.save and epoch % self.args.save_epoch == 0:
-                    print('Saving checkpoint')
                     filename = join(self.args.path_to_checkpoints, 'ckp_{}.pt'.format(epoch))
-                    torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': self.network.state_dict(),
-                        'optim_state_dict': self.optimizer.state_dict(),
-                    }, filename)
-                    shutil.copyfile(filename, join(self.args.path_to_checkpoints, 'ckp_latest.pt'))
+                    self.save_checkpoint(filename, epoch)
                     
         except KeyboardInterrupt:
-            print('Saving checkpoint')
             filename = join(self.args.path_to_checkpoints, 'ckp_{}_interrupt.pt'.format(epoch))
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': self.network.state_dict(),
-                'optim_state_dict': self.optimizer.state_dict(),
-            }, filename)
-            shutil.copyfile(filename, join(self.args.path_to_checkpoints, 'ckp_latest.pt'))
+            self.save_checkpoint(filename, epoch)
 
     def evaluate(self):
-        pass
+        with torch.no_grad():
+            self.args.batch_size = 1
+
+            # Load checkpoint
+            checkpoint = torch.load(glob.glob(join(args.path_to_checkpoints, "*latest*.pt"))[0])
+            network.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optim_state_dict'])
+            epoch = checkpoint['epoch']
+
+            data_transform = transforms.Compose([
+                transforms.ToTensor(),  # divides float version by 255
+                # transforms.CenterCrop(opt.image_size),
+            ])
+
+            shuffle = False
+            phase = 'val'
+            set_dataloader = DatasetCityscapes(opt=args, phase=phase, data_transform=data_transform)
+            test_dataloader = torch.utils.data.DataLoader(set_dataloader, batch_size=args.batch_size, shuffle=shuffle,
+                                                           num_workers=args.n_threads, drop_last=True)
+            test_size = len(test_dataloader)
+            print(test_size)
+            network.eval()
+            progress_bar = tqdm.tqdm(range(len(test_dataloader)))
+            data_iter = iter(test_dataloader)
+            total_iter = 0
+            global_cm = 0
+            accuracy_metric = AccuracyMetric(global_cm=global_cm)
+            if args.cuda:
+                network.to(args.cuda_device)
+            print('[Testing]')
+            for _ in progress_bar:
+                # test_step
+                total_iter += 1
+                input, target = data_iter.next()
+                if args.cuda:
+                    input= input.to(args.cuda_device)
+                    target = target.to(args.cuda_device)
+
+                pred = network(input)
+
+                target_ = target.cpu().numpy()
+                pred_ = np.argmax(pred.cpu().numpy(), axis=1)
+
+                accuracy_metric.update_values(pred_, target_, list(range(args.output_nc)))
+
+            overall_acc, average_acc, average_iou = accuracy_metric.get_values()
+            message = '>>> Epoch[{}] {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
+            epoch,
+            'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
+            print(message)
