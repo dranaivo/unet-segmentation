@@ -1,4 +1,7 @@
-# import libraries
+'''
+Entry point for training and evaluation.
+'''
+
 import argparse
 import random
 import numpy as np

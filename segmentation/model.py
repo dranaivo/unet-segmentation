@@ -1,9 +1,13 @@
+'''UNet model definition.'''
+
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
 class DoubleConv(nn.Module):
-    """(convolution => [BN] => ReLU) * 2"""
+    """ Composition of layers :
+        (convolution => [BN] => ReLU) * 2
+    """
 
     def __init__(self, in_channels, out_channels, mid_channels=None):
         super().__init__()
@@ -23,7 +27,7 @@ class DoubleConv(nn.Module):
 
 
 class Down(nn.Module):
-    """Downscaling with maxpool then double conv"""
+    """Downscaling with maxpool then double convolution."""
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -37,7 +41,7 @@ class Down(nn.Module):
 
 
 class Up(nn.Module):
-    """Upscaling then double conv"""
+    """Upscaling then double convolution."""
 
     def __init__(self, in_channels, out_channels, bilinear=True):
         super().__init__()
@@ -103,4 +107,5 @@ class UNet(nn.Module):
         x = self.up2(x, x3)
         x = self.up3(x, x2)
         x = self.up4(x, x1)
+
         return self.outc(x)

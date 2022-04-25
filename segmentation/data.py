@@ -1,3 +1,25 @@
+'''Cityscape segmentation dataset definition.
+
+An example of dataset structure :
+
+cityscape/
+├── gtFine_trainvaltest
+│   └── gtFine
+│       ├── test       
+│       │   └── berlin 
+│       ├── train      
+│       │   └── aachen 
+│       └── val
+│           └── frankfurt
+└── leftImg8bit
+    ├── test
+    │   └── berlin
+    ├── train
+    │   └── aachen
+    └── val
+        └── frankfurt
+'''
+
 import glob
 from os.path import join
 import random

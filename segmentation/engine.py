@@ -1,3 +1,7 @@
+'''
+Training and Evaluation procedures.
+'''
+
 import glob
 from os.path import join
 import shutil
