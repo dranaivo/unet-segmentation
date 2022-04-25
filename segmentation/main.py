@@ -7,13 +7,12 @@ import random
 import numpy as np
 
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 
 from engine import Engine
 from model import UNet
 
-def parse_arguments():
+def parse_arguments() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', action='store_true', help='train')
     parser.add_argument('--test', action='store_true', help='test')
@@ -38,13 +37,13 @@ def parse_arguments():
     return parser.parse_args()
 
 # System configurations
-def system_setup(args):
+def system_setup(args: argparse.ArgumentParser) -> None:
     random.seed(args.random_seed)
     np.random.seed(args.random_seed)
     torch.cuda.manual_seed_all(args.random_seed)
     torch.manual_seed(args.random_seed)
 
-def main():
+def main() -> None:
     args = parse_arguments()
     system_setup(args)
 

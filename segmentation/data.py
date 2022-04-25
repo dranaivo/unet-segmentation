@@ -20,9 +20,11 @@ cityscape/
         └── frankfurt
 '''
 
+import argparse
 import glob
 from os.path import join
 import random
+from typing import Callable, List, Tuple
 
 import numpy as np
 from PIL import Image, ImageFile
@@ -33,29 +35,28 @@ import torchvision.transforms as transforms
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def load_img(filename, task='rgb'):
+def load_img(filename: str, task: str='rgb') -> Image.Image:
     image = Image.open(filename)
     return image
 
 
-def dataset_cityscapes_get_semantics(root, phase):
+def dataset_cityscapes_get_semantics(root: str, phase: str) -> List[str]:
     return sorted(glob.glob(join(root, 'gtFine_trainvaltest/gtFine', phase, '*/*labelIds.png')))
 
 
-def dataset_cityscapes_get_rgb(root, phase):
+def dataset_cityscapes_get_rgb(root: str, phase: str) -> List[str]:
     return sorted(glob.glob(join(root, 'leftImg8bit', phase, '*/*.png')))
 
 
-def get_paths_list(root, phase):
+def get_paths_list(root: str, phase: str) -> Tuple[List[str],List[str]]:
     rgb_images = dataset_cityscapes_get_rgb(root, phase)
     return rgb_images, dataset_cityscapes_get_semantics(root, phase)
 
 
 
 class DatasetCityscapes(data.Dataset):
-    def __init__(self, opt, phase, data_transform=None):
+    def __init__(self, opt, phase: str, data_transform: Callable=None) -> None:
         self.phase = phase
-
         self.input_list, self.target_list = get_paths_list(opt.path_to_dataset, phase)
 
         if len(self.input_list) == 0:
@@ -80,7 +81,7 @@ class DatasetCityscapes(data.Dataset):
         self.ins_ignore_value = 250
         self.class_map = dict(zip(self.valid_classes, range(19)))
 
-    def encode_segmap(self, mask):
+    def encode_segmap(self, mask: np.array) -> np.array:
         # Put all void classes to zero
         for _voidc in self.void_classes:
             mask[mask == _voidc] = self.ignore_index
@@ -88,7 +89,7 @@ class DatasetCityscapes(data.Dataset):
             mask[mask == _validc] = self.class_map[_validc]
         return mask
 
-    def transform(self, image, mask):
+    def transform(self, image: Image.Image, mask: Image.Image) -> Tuple[Image.Image, Image.Image]:
         from torchvision.transforms import functional as TF
         # Resize
         resize = transforms.Resize(size=(520, 520))

@@ -55,7 +55,7 @@ class Engine():
         self.total_epochs = args.total_epochs
         self.accuracy_metric = AccuracyMetric(global_cm=self.global_cm)
 
-    def save_checkpoint(self, filename, epoch):
+    def save_checkpoint(self, filename: str, epoch: int) -> None:
         print('Saving checkpoint')
         torch.save({
             'epoch': epoch,
@@ -64,7 +64,7 @@ class Engine():
         }, filename)
         shutil.copyfile(filename, join(self.args.path_to_checkpoints, 'ckp_latest.pt'))
 
-    def load_checkpoint(self):
+    def load_checkpoint(self) -> int:
         checkpoint = torch.load(glob.glob(join(self.args.path_to_checkpoints, "*latest*.pt"))[0])
         self.network.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optim_state_dict'])

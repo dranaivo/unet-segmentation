@@ -9,7 +9,7 @@ class DoubleConv(nn.Module):
         (convolution => [BN] => ReLU) * 2
     """
 
-    def __init__(self, in_channels, out_channels, mid_channels=None):
+    def __init__(self, in_channels: int, out_channels: int, mid_channels=None) -> None:
         super().__init__()
         if not mid_channels:
             mid_channels = out_channels
@@ -22,28 +22,28 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True)
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.double_conv(x)
 
 
 class Down(nn.Module):
     """Downscaling with maxpool then double convolution."""
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels: int, out_channels: int) -> None:
         super().__init__()
         self.maxpool_conv = nn.Sequential(
             nn.MaxPool2d(2),
             DoubleConv(in_channels, out_channels)
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.maxpool_conv(x)
 
 
 class Up(nn.Module):
     """Upscaling then double convolution."""
 
-    def __init__(self, in_channels, out_channels, bilinear=True):
+    def __init__(self, in_channels: int, out_channels: int, bilinear: bool=True) -> None:
         super().__init__()
 
         # if bilinear, use the normal convolutions to reduce the number of channels
@@ -54,7 +54,7 @@ class Up(nn.Module):
             self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=2, stride=2)
             self.conv = DoubleConv(in_channels, out_channels)
 
-    def forward(self, x1, x2):
+    def forward(self, x1: torch.Tensor, x2: torch.Tensor) -> torch.Tensor:
         x1 = self.up(x1)
         # input is CHW
         diffY = x2.size()[2] - x1.size()[2]
@@ -66,20 +66,21 @@ class Up(nn.Module):
         # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
         # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
         x = torch.cat([x2, x1], dim=1)
+
         return self.conv(x)
 
 
 class OutConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels: int, out_channels: int) -> None:
         super(OutConv, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.conv(x)
 
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=False):
+    def __init__(self, n_channels: int, n_classes: int, bilinear: bool=False) -> None:
         super(UNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -97,7 +98,7 @@ class UNet(nn.Module):
         self.up4 = Up(128, 64, bilinear)
         self.outc = OutConv(64, n_classes)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x1 = self.inc(x)
         x2 = self.down1(x1)
         x3 = self.down2(x2)
