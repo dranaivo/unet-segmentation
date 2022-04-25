@@ -35,46 +35,61 @@ import torchvision.transforms as transforms
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def load_img(filename: str, task: str='rgb') -> Image.Image:
+def load_img(filename: str, task: str = 'rgb') -> Image.Image:
     image = Image.open(filename)
     return image
 
 
 def dataset_cityscapes_get_semantics(root: str, phase: str) -> List[str]:
-    return sorted(glob.glob(join(root, 'gtFine_trainvaltest/gtFine', phase, '*/*labelIds.png')))
+    return sorted(
+        glob.glob(
+            join(root, 'gtFine_trainvaltest/gtFine', phase, '*/*labelIds.png')))
 
 
 def dataset_cityscapes_get_rgb(root: str, phase: str) -> List[str]:
     return sorted(glob.glob(join(root, 'leftImg8bit', phase, '*/*.png')))
 
 
-def get_paths_list(root: str, phase: str) -> Tuple[List[str],List[str]]:
+def get_paths_list(root: str, phase: str) -> Tuple[List[str], List[str]]:
     rgb_images = dataset_cityscapes_get_rgb(root, phase)
     return rgb_images, dataset_cityscapes_get_semantics(root, phase)
 
 
-
 class DatasetCityscapes(data.Dataset):
-    def __init__(self, opt, phase: str, data_transform: Callable=None) -> None:
+
+    def __init__(self,
+                 opt,
+                 phase: str,
+                 data_transform: Callable = None) -> None:
         self.phase = phase
-        self.input_list, self.target_list = get_paths_list(opt.path_to_dataset, phase)
+        self.input_list, self.target_list = get_paths_list(
+            opt.path_to_dataset, phase)
 
         if len(self.input_list) == 0:
-            raise (RuntimeError("Found no images in subfolders of: " + opt.path_to_dataset + "\n"))
+            raise (RuntimeError("Found no images in subfolders of: " +
+                                opt.path_to_dataset + "\n"))
         else:
-            print("Seems like your path is ok! =) I found {} images!".format(len(self.input_list)))
+            print("Seems like your path is ok! =) I found {} images!".format(
+                len(self.input_list)))
 
         if len(self.target_list) == 0:
-            raise (RuntimeError("Found no images in subfolders of: " + opt.path_to_dataset + "\n"))
+            raise (RuntimeError("Found no images in subfolders of: " +
+                                opt.path_to_dataset + "\n"))
         else:
-            print("Seems like your path is ok! =) I found {} masks!".format(len(self.target_list)))
+            print("Seems like your path is ok! =) I found {} masks!".format(
+                len(self.target_list)))
 
         self.data_transform = data_transform
 
         self.phase = phase
 
-        self.void_classes = [0, 1, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 18, 29, 30, -1]
-        self.valid_classes = [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33]
+        self.void_classes = [
+            0, 1, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 18, 29, 30, -1
+        ]
+        self.valid_classes = [
+            7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31,
+            32, 33
+        ]
         self.no_instances = [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23]
 
         self.ignore_index = 250
@@ -89,7 +104,8 @@ class DatasetCityscapes(data.Dataset):
             mask[mask == _validc] = self.class_map[_validc]
         return mask
 
-    def transform(self, image: Image.Image, mask: Image.Image) -> Tuple[Image.Image, Image.Image]:
+    def transform(self, image: Image.Image,
+                  mask: Image.Image) -> Tuple[Image.Image, Image.Image]:
         from torchvision.transforms import functional as TF
         # Resize
         resize = transforms.Resize(size=(520, 520))
@@ -97,8 +113,8 @@ class DatasetCityscapes(data.Dataset):
         mask = resize(mask)
 
         # Random crop
-        i, j, h, w = transforms.RandomCrop.get_params(
-            image, output_size=(256, 256))
+        i, j, h, w = transforms.RandomCrop.get_params(image,
+                                                      output_size=(256, 256))
         image = TF.crop(image, i, j, h, w)
         mask = TF.crop(mask, i, j, h, w)
 
@@ -121,7 +137,8 @@ class DatasetCityscapes(data.Dataset):
         input_img, target = self.transform(input_img, target)
         input_tensor = self.data_transform(input_img)
 
-        target_np = torch.LongTensor(self.encode_segmap(np.array(target, dtype=np.uint8)))
+        target_np = torch.LongTensor(
+            self.encode_segmap(np.array(target, dtype=np.uint8)))
         return input_tensor, target_np
 
     def __len__(self):
