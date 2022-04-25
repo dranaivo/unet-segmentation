@@ -103,9 +103,6 @@ def main():
         progress_bar = tqdm.tqdm(range(len(train_dataloader)))
         # Initialize metrics
         global_cm = np.zeros((args.output_nc, args.output_nc))
-        # overall_acc = 0
-        # average_acc = 0
-        # average_iou = 0
         accuracy_metric = AccuracyMetric(global_cm=global_cm)
         progress_bar.set_description('[Training]')
         try:
@@ -134,27 +131,6 @@ def main():
                             target_ = target.cpu().numpy()
                             pred_ = np.argmax(pred.cpu().numpy(), axis=1)
                             accuracy_metric.update_values(target_, pred_, list(range(args.output_nc)))
-                            # cm = confusion_matrix(target_.ravel(), pred_.ravel(), labels=list(range(args.output_nc)))
-                            # global_cm += cm
-                            # if global_cm.sum() > 0:
-                            #     overall_acc = np.trace(global_cm) / global_cm.sum()
-
-                            #     sums = np.sum(global_cm, axis=1)
-                            #     mask = (sums > 0)
-                            #     sums[sums == 0] = 1
-                            #     accuracy_per_class = np.diag(global_cm) / sums  # sum over lines
-                            #     accuracy_per_class[np.logical_not(mask)] = -1
-                            #     average_acc = accuracy_per_class[mask].mean()
-
-                            #     sums = (np.sum(global_cm, axis=1) + np.sum(global_cm, axis=0) - np.diag(global_cm))
-                            #     mask = (sums > 0)
-                            #     sums[sums == 0] = 1
-                            #     iou_per_class = np.diag(global_cm) / sums
-                            #     iou_per_class[np.logical_not(mask)] = -1
-                            #     average_iou = iou_per_class[mask].mean()
-                            # else:
-                            #     overall_acc, average_acc, average_iou = 0, 0, 0
-
                             overall_acc, average_acc, average_iou = accuracy_metric.get_values()
                             message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
                                 epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
@@ -207,6 +183,7 @@ def main():
             data_iter = iter(test_dataloader)
             total_iter = 0
             global_cm = 0
+            accuracy_metric = AccuracyMetric(global_cm=global_cm)
             if args.cuda:
                 network.to(args.cuda_device)
             print('[Testing]')
@@ -223,28 +200,29 @@ def main():
                 target_ = target.cpu().numpy()
                 pred_ = np.argmax(pred.cpu().numpy(), axis=1)
 
-                cm = confusion_matrix(target_.ravel(), pred_.ravel(), labels=list(range(args.output_nc)))
-                global_cm += cm
-                if global_cm.sum() > 0:
-                    overall_acc = np.trace(global_cm) / global_cm.sum()
+                accuracy_metric.update_values(pred_, target_, list(range(args.output_nc)))
+                # cm = confusion_matrix(target_.ravel(), pred_.ravel(), labels=list(range(args.output_nc)))
+                # global_cm += cm
+                # if global_cm.sum() > 0:
+                #     overall_acc = np.trace(global_cm) / global_cm.sum()
 
-                    sums = np.sum(global_cm, axis=1)
-                    mask = (sums > 0)
-                    sums[sums == 0] = 1
-                    accuracy_per_class = np.diag(global_cm) / sums  # sum over lines
-                    accuracy_per_class[np.logical_not(mask)] = -1
-                    average_acc = accuracy_per_class[mask].mean()
+                #     sums = np.sum(global_cm, axis=1)
+                #     mask = (sums > 0)
+                #     sums[sums == 0] = 1
+                #     accuracy_per_class = np.diag(global_cm) / sums  # sum over lines
+                #     accuracy_per_class[np.logical_not(mask)] = -1
+                #     average_acc = accuracy_per_class[mask].mean()
 
-                    sums = (np.sum(global_cm, axis=1) + np.sum(global_cm, axis=0) - np.diag(global_cm))
-                    mask = (sums > 0)
-                    sums[sums == 0] = 1
-                    iou_per_class = np.diag(global_cm) / sums
-                    iou_per_class[np.logical_not(mask)] = -1
-                    average_iou = iou_per_class[mask].mean()
-                else:
-                    overall_acc, average_acc, average_iou = 0, 0, 0
-                #
-
+                #     sums = (np.sum(global_cm, axis=1) + np.sum(global_cm, axis=0) - np.diag(global_cm))
+                #     mask = (sums > 0)
+                #     sums[sums == 0] = 1
+                #     iou_per_class = np.diag(global_cm) / sums
+                #     iou_per_class[np.logical_not(mask)] = -1
+                #     average_iou = iou_per_class[mask].mean()
+                # else:
+                #     overall_acc, average_acc, average_iou = 0, 0, 0
+                # #
+            overall_acc, average_acc, average_iou = accuracy_metric.get_values()
             message = '>>> Epoch[{}] {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
             epoch,
             'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
