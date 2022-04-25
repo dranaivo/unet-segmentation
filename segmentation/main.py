@@ -102,9 +102,9 @@ def main():
         progress_bar = tqdm.tqdm(range(len(train_dataloader)))
         # Initialize metrics
         global_cm = np.zeros((args.output_nc, args.output_nc))
-        overall_acc = 0
-        average_acc = 0
-        average_iou = 0
+        # overall_acc = 0
+        # average_acc = 0
+        # average_iou = 0
         progress_bar.set_description('[Training]')
         try:
             for epoch in range(args.total_epochs):
@@ -149,14 +149,14 @@ def main():
                                 iou_per_class = np.diag(global_cm) / sums
                                 iou_per_class[np.logical_not(mask)] = -1
                                 average_iou = iou_per_class[mask].mean()
-                                message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
-                                    epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
-                                    'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
                             else:
                                 overall_acc, average_acc, average_iou = 0, 0, 0
-                                message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
-                                    epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
-                                    'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
+                                # message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
+                                #     epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
+                                #     'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)       
+                            message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
+                                epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
+                                'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
                             print(message)
                     #
                 if args.save and epoch % args.save_epoch == 0:
@@ -207,7 +207,6 @@ def main():
             global_cm = 0
             if args.cuda:
                 network.to(args.cuda_device)
-            # Initialize metrics
             print('[Testing]')
             for _ in progress_bar:
                 # test_step
