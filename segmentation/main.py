@@ -85,13 +85,12 @@ def main():
             network = network.to(args.cuda_device)
 
         # dataloader
+        shuffle = True
+        phase = 'train'
         data_transform = transforms.Compose([
             transforms.ToTensor(),  # divides float version by 255
             # transforms.RandomCrop(opt.image_size)
         ])
-
-        shuffle = True
-        phase = 'train'
         set_dataloader = DatasetCityscapes(opt=args, phase=phase, data_transform=data_transform)
         train_dataloader = torch.utils.data.DataLoader(set_dataloader, batch_size=args.batch_size, shuffle=shuffle,
                                                   num_workers=args.n_threads, drop_last=True)
@@ -160,12 +159,13 @@ def main():
         # evaluation function
         with torch.no_grad():
             args.batch_size = 1
+
+            # Load checkpoint
             checkpoint = torch.load(glob.glob(join(args.path_to_checkpoints, "*latest*.pt"))[0])
             network.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optim_state_dict'])
             epoch = checkpoint['epoch']
 
-            # Load checkpoint
             data_transform = transforms.Compose([
                 transforms.ToTensor(),  # divides float version by 255
                 # transforms.CenterCrop(opt.image_size),
@@ -201,27 +201,7 @@ def main():
                 pred_ = np.argmax(pred.cpu().numpy(), axis=1)
 
                 accuracy_metric.update_values(pred_, target_, list(range(args.output_nc)))
-                # cm = confusion_matrix(target_.ravel(), pred_.ravel(), labels=list(range(args.output_nc)))
-                # global_cm += cm
-                # if global_cm.sum() > 0:
-                #     overall_acc = np.trace(global_cm) / global_cm.sum()
 
-                #     sums = np.sum(global_cm, axis=1)
-                #     mask = (sums > 0)
-                #     sums[sums == 0] = 1
-                #     accuracy_per_class = np.diag(global_cm) / sums  # sum over lines
-                #     accuracy_per_class[np.logical_not(mask)] = -1
-                #     average_acc = accuracy_per_class[mask].mean()
-
-                #     sums = (np.sum(global_cm, axis=1) + np.sum(global_cm, axis=0) - np.diag(global_cm))
-                #     mask = (sums > 0)
-                #     sums[sums == 0] = 1
-                #     iou_per_class = np.diag(global_cm) / sums
-                #     iou_per_class[np.logical_not(mask)] = -1
-                #     average_iou = iou_per_class[mask].mean()
-                # else:
-                #     overall_acc, average_acc, average_iou = 0, 0, 0
-                # #
             overall_acc, average_acc, average_iou = accuracy_metric.get_values()
             message = '>>> Epoch[{}] {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
             epoch,
