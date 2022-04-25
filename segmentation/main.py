@@ -11,6 +11,7 @@ import tqdm
 from model import UNet
 from data import DatasetCityscapes
 from metrics import AccuracyMetric
+from engine import Engine
 import numpy as np
 
 from PIL import Image
@@ -71,90 +72,92 @@ def main():
     loss_fn = nn.CrossEntropyLoss(ignore_index=250)
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
 
+    engine = Engine(args, network, loss_fn, optimizer)
     # Training function
     if args.train:
-        if args.resume:
-            checkpoint = torch.load(glob.glob(join(args.path_to_checkpoints, "*latest*.pt"))[0])
-            network.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optim_state_dict'])
-            epoch = checkpoint['epoch']
-            # loss = checkpoint['loss']
+        engine.train()
+        # if args.resume:
+        #     checkpoint = torch.load(glob.glob(join(args.path_to_checkpoints, "*latest*.pt"))[0])
+        #     network.load_state_dict(checkpoint['model_state_dict'])
+        #     optimizer.load_state_dict(checkpoint['optim_state_dict'])
+        #     epoch = checkpoint['epoch']
+        #     # loss = checkpoint['loss']
 
-        if args.cuda:
-            print("Using cuda device.")
-            network = network.to(args.cuda_device)
+        # if args.cuda:
+        #     print("Using cuda device.")
+        #     network = network.to(args.cuda_device)
 
-        # dataloader
-        shuffle = True
-        phase = 'train'
-        data_transform = transforms.Compose([
-            transforms.ToTensor(),  # divides float version by 255
-            # transforms.RandomCrop(opt.image_size)
-        ])
-        set_dataloader = DatasetCityscapes(opt=args, phase=phase, data_transform=data_transform)
-        train_dataloader = torch.utils.data.DataLoader(set_dataloader, batch_size=args.batch_size, shuffle=shuffle,
-                                                  num_workers=args.n_threads, drop_last=True)
+        # # dataloader
+        # shuffle = True
+        # phase = 'train'
+        # data_transform = transforms.Compose([
+        #     transforms.ToTensor(),  # divides float version by 255
+        #     # transforms.RandomCrop(opt.image_size)
+        # ])
+        # set_dataloader = DatasetCityscapes(opt=args, phase=phase, data_transform=data_transform)
+        # train_dataloader = torch.utils.data.DataLoader(set_dataloader, batch_size=args.batch_size, shuffle=shuffle,
+        #                                           num_workers=args.n_threads, drop_last=True)
 
-        train_size = len(train_dataloader)
-        print(train_size)
-        network.train()
+        # train_size = len(train_dataloader)
+        # print(train_size)
+        # network.train()
 
-        progress_bar = tqdm.tqdm(range(len(train_dataloader)))
-        # Initialize metrics
-        global_cm = np.zeros((args.output_nc, args.output_nc))
-        accuracy_metric = AccuracyMetric(global_cm=global_cm)
-        progress_bar.set_description('[Training]')
-        try:
-            for epoch in range(args.total_epochs):
-                data_iter = iter(train_dataloader)
-                progress_bar = tqdm.tqdm(range(len(train_dataloader)))
-                total_iter = 0
-                for _ in progress_bar:
-                    # train_step
-                    total_iter += 1
-                    input, target = data_iter.next()
-                    if args.cuda:
-                        input = input.to(args.cuda_device)
-                        target = target.to(args.cuda_device)
+        # progress_bar = tqdm.tqdm(range(len(train_dataloader)))
+        # # Initialize metrics
+        # global_cm = np.zeros((args.output_nc, args.output_nc))
+        # accuracy_metric = AccuracyMetric(global_cm=global_cm)
+        # progress_bar.set_description('[Training]')
+        # try:
+        #     for epoch in range(args.total_epochs):
+        #         data_iter = iter(train_dataloader)
+        #         progress_bar = tqdm.tqdm(range(len(train_dataloader)))
+        #         total_iter = 0
+        #         for _ in progress_bar:
+        #             # train_step
+        #             total_iter += 1
+        #             input, target = data_iter.next()
+        #             if args.cuda:
+        #                 input = input.to(args.cuda_device)
+        #                 target = target.to(args.cuda_device)
 
-                    pred = network(input)
-                    loss = loss_fn(pred, target)
+        #             pred = network(input)
+        #             loss = loss_fn(pred, target)
 
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
+        #             optimizer.zero_grad()
+        #             loss.backward()
+        #             optimizer.step()
 
-                    # Show semantic segmentation metrics
-                    if total_iter % args.print_metrics_iter == 0:
-                        with torch.no_grad():
-                            target_ = target.cpu().numpy()
-                            pred_ = np.argmax(pred.cpu().numpy(), axis=1)
-                            accuracy_metric.update_values(target_, pred_, list(range(args.output_nc)))
-                            overall_acc, average_acc, average_iou = accuracy_metric.get_values()
-                            message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
-                                epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
-                                'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
-                            print(message)
-                    #
-                if args.save and epoch % args.save_epoch == 0:
-                    print('Saving checkpoint')
-                    filename = join(args.path_to_checkpoints, 'ckp_{}.pt'.format(epoch))
-                    torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': network.state_dict(),
-                        'optim_state_dict': optimizer.state_dict(),
-                    }, filename)
-                    shutil.copyfile(filename, join(args.path_to_checkpoints, 'ckp_latest.pt'))
+        #             # Show semantic segmentation metrics
+        #             if total_iter % args.print_metrics_iter == 0:
+        #                 with torch.no_grad():
+        #                     target_ = target.cpu().numpy()
+        #                     pred_ = np.argmax(pred.cpu().numpy(), axis=1)
+        #                     accuracy_metric.update_values(target_, pred_, list(range(args.output_nc)))
+        #                     overall_acc, average_acc, average_iou = accuracy_metric.get_values()
+        #                     message = '>>> Epoch[{}/{}]({}/{}) {}: {:.4f} {}: {:.4f} {}: {:.4f} {}: {:.4f} '.format(
+        #                         epoch, args.total_epochs, total_iter, len(train_dataloader), 'loss', loss.cpu().numpy(),
+        #                         'OvAcc', overall_acc, 'AvAcc', average_acc, 'AvIOU', average_iou)
+        #                     print(message)
+        #             #
+        #         if args.save and epoch % args.save_epoch == 0:
+        #             print('Saving checkpoint')
+        #             filename = join(args.path_to_checkpoints, 'ckp_{}.pt'.format(epoch))
+        #             torch.save({
+        #                 'epoch': epoch,
+        #                 'model_state_dict': network.state_dict(),
+        #                 'optim_state_dict': optimizer.state_dict(),
+        #             }, filename)
+        #             shutil.copyfile(filename, join(args.path_to_checkpoints, 'ckp_latest.pt'))
                     
-        except KeyboardInterrupt:
-            print('Saving checkpoint')
-            filename = join(args.path_to_checkpoints, 'ckp_{}_interrupt.pt'.format(epoch))
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': network.state_dict(),
-                'optim_state_dict': optimizer.state_dict(),
-            }, filename)
-            shutil.copyfile(filename, join(args.path_to_checkpoints, 'ckp_latest.pt'))
+        # except KeyboardInterrupt:
+        #     print('Saving checkpoint')
+        #     filename = join(args.path_to_checkpoints, 'ckp_{}_interrupt.pt'.format(epoch))
+        #     torch.save({
+        #         'epoch': epoch,
+        #         'model_state_dict': network.state_dict(),
+        #         'optim_state_dict': optimizer.state_dict(),
+        #     }, filename)
+        #     shutil.copyfile(filename, join(args.path_to_checkpoints, 'ckp_latest.pt'))
     else:
         # evaluation function
         with torch.no_grad():
