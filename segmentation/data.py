@@ -50,7 +50,7 @@ class DatasetCityscapes(data.Dataset):
         if len(self.target_list) == 0:
             raise (RuntimeError("Found no images in subfolders of: " + opt.path_to_dataset + "\n"))
         else:
-            print("Seems like your path is ok! =) I found {} images!".format(len(self.target_list)))
+            print("Seems like your path is ok! =) I found {} masks!".format(len(self.target_list)))
 
         self.data_transform = data_transform
 
