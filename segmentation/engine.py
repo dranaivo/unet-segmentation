@@ -15,4 +15,11 @@ total_iter += 1
 #     optimizer.step()
 
 class Engine():
-    pass
+    def __ini__(self, model, loss_fn, optimizer):
+        pass
+    def load_checkpoint(self):
+        pass
+    def train(self):
+        pass
+    def evaluate(self):
+        pass
