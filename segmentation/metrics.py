@@ -1,3 +1,6 @@
+import numpy as np
+from sklearn.metrics import confusion_matrix
+
 class AccuracyMetric():
     def __init__(self, global_cm):
         self.global_cm = global_cm
@@ -7,7 +10,25 @@ class AccuracyMetric():
 
     def reset(self):
         pass
-    def update_values(self):
-        pass
+    def update_values(self, pred_, target_, labels=list(range(args.output_nc))):
+        cm = confusion_matrix(target_.ravel(), pred_.ravel(), labels=labels)
+        global_cm += cm
+        if global_cm.sum() > 0:
+            overall_acc = np.trace(global_cm) / global_cm.sum()
+
+            sums = np.sum(global_cm, axis=1)
+            mask = (sums > 0)
+            sums[sums == 0] = 1
+            accuracy_per_class = np.diag(global_cm) / sums  # sum over lines
+            accuracy_per_class[np.logical_not(mask)] = -1
+            average_acc = accuracy_per_class[mask].mean()
+
+            sums = (np.sum(global_cm, axis=1) + np.sum(global_cm, axis=0) - np.diag(global_cm))
+            mask = (sums > 0)
+            sums[sums == 0] = 1
+            iou_per_class = np.diag(global_cm) / sums
+            iou_per_class[np.logical_not(mask)] = -1
+            average_iou = iou_per_class[mask].mean()
+
     def get_values(self):
         return self.overall_acc, self.average_acc, self.average_iou
