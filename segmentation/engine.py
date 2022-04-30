@@ -40,7 +40,9 @@ class Engine():
         self.optimizer = optimizer
         self.network = network
         self.path_to_checkpoints = path_to_checkpoints
-        if len(list(glob.glob(join(self.path_to_checkpoints, "*latest*.pt")))) != 0:
+        if len(list(glob.glob(join(self.path_to_checkpoints, "*latest*.pt")))) == 0:
+            self.resume = False
+        else:
             self.resume = True
         self.save_checkpoints = save_checkpoints
         self.save_frequency_in_epoch = save_frequency_in_epoch

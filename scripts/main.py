@@ -3,8 +3,8 @@ Entry point for training and evaluation.
 '''
 
 import argparse
-import random
 import numpy as np
+import os
 
 import torch
 import torch.nn as nn
@@ -64,6 +64,7 @@ def main() -> None:
     # Network
     network = UNet(args.input_nc, args.output_nc)
     path_to_checkpoints = args.path_to_checkpoints
+    os.makedirs(path_to_checkpoints, exist_ok=True)
     save_checkpoints = args.save
     save_frequency_in_epoch = args.save_epoch
     print(network)
