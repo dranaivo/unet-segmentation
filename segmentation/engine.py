@@ -40,6 +40,8 @@ class Engine():
         self.optimizer = optimizer
         self.network = network
         self.path_to_checkpoints = path_to_checkpoints
+        if len(list(glob.glob(join(self.path_to_checkpoints, "*latest*.pt")))) != 0:
+            self.resume = True
         self.save_checkpoints = save_checkpoints
         self.save_frequency_in_epoch = save_frequency_in_epoch
         self.cuda = use_cuda
@@ -102,7 +104,7 @@ class Engine():
         return epoch
 
     def train(self) -> None:
-        if self.args.resume:
+        if self.resume:
             init_epoch = self.load_checkpoint()
         else:
             init_epoch = 0

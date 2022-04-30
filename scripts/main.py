@@ -48,9 +48,6 @@ def parse_arguments() -> argparse.ArgumentParser:
     parser.add_argument('--save',
                         action='store_true',
                         help='Save model weights')
-    parser.add_argument('--resume',
-                        action='store_true',
-                        help='Resume training from last checkpoint')
     parser.add_argument('--path_to_checkpoints', default="./unicityscape")
 
     return parser.parse_args()

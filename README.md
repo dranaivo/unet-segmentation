@@ -23,6 +23,3 @@ Otherwise, display the helper description of the main function to get all argume
 # from scripts/
 python main.py --help
 ```
-
-## About testing
-I was not able to add testing. Nevertheless, I show a planning of what I consider testing inside each module of the folder **`tests/`**.
