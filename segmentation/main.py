@@ -62,6 +62,7 @@ def main() -> None:
 
     # Network
     network = UNet(args.input_nc, args.output_nc)
+    path_to_checkpoints = args.path_to_checkpoints
     print(network)
 
     # Loss and Otimizer
@@ -79,7 +80,7 @@ def main() -> None:
     total_epochs = args.total_epochs
     batch_size = args.batch_size
 
-    engine = Engine(args, network, loss_fn, optimizer, cityscape_path, total_epochs, batch_size, phase=phase)
+    engine = Engine(args, network, loss_fn, optimizer, cityscape_path, total_epochs, batch_size, path_to_checkpoints, phase=phase)
     if args.train:
         engine.train()
     else:

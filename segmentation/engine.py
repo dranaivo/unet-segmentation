@@ -20,11 +20,13 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Engine():
 
-    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, total_epochs, batch_size, phase="train"):
+    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, total_epochs, batch_size, path_to_checkpoints, 
+        phase="train"):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.network = network
+        self.path_to_checkpoints = path_to_checkpoints
         if self.args.cuda:
             print("Using cuda device.")
             self.network = self.network.to(args.cuda_device)
@@ -72,11 +74,11 @@ class Engine():
                 'optim_state_dict': self.optimizer.state_dict(),
             }, filename)
         shutil.copyfile(filename,
-                        join(self.args.path_to_checkpoints, 'ckp_latest.pt'))
+                        join(self.path_to_checkpoints, 'ckp_latest.pt'))
 
     def load_checkpoint(self) -> int:
         checkpoint = torch.load(
-            glob.glob(join(self.args.path_to_checkpoints, "*latest*.pt"))[0])
+            glob.glob(join(self.path_to_checkpoints, "*latest*.pt"))[0])
         self.network.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optim_state_dict'])
         epoch = checkpoint['epoch']
@@ -122,12 +124,12 @@ class Engine():
                             print(message)
 
                 if self.args.save and epoch % self.args.save_epoch == 0:
-                    filename = join(self.args.path_to_checkpoints,
+                    filename = join(self.path_to_checkpoints,
                                     'ckp_{}.pt'.format(epoch))
                     self.save_checkpoint(filename, epoch)
 
         except KeyboardInterrupt:
-            filename = join(self.args.path_to_checkpoints,
+            filename = join(self.path_to_checkpoints,
                             'ckp_{}_interrupt.pt'.format(epoch))
             self.save_checkpoint(filename, epoch)
 
