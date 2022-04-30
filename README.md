@@ -8,11 +8,7 @@ Semantic segmentation using **UNet model** on **Cityscape Segmentation dataset**
 Python 3.6.9
 ```
 
-First, install **PyTorch**:
-```bash
-pip install torch==1.9.0+cpu torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
-```
-Then :
+Inside of the `root` directory, execute :
 ```bash
 pip install -r requirements.txt
 ```
