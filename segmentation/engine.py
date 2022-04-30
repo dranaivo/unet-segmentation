@@ -20,7 +20,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Engine():
 
-    def __init__(self, args, network, loss_fn, optimizer):
+    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -48,7 +48,7 @@ class Engine():
             self.description = "[Testing]"
             self.global_cm = 0
 
-        self.set_dataloader = DatasetCityscapes(opt=args,
+        self.set_dataloader = DatasetCityscapes(path_to_dataset=path_to_dataset,
                                                 phase=phase,
                                                 data_transform=data_transform)
         self.dataloader = torch.utils.data.DataLoader(

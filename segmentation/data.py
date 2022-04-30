@@ -24,7 +24,8 @@ import argparse
 import glob
 from os.path import join
 import random
-from typing import Callable, List, Tuple
+import pathlib
+from typing import Callable, List, Tuple, Union
 
 import numpy as np
 from PIL import Image, ImageFile
@@ -58,23 +59,23 @@ def get_paths_list(root: str, phase: str) -> Tuple[List[str], List[str]]:
 class DatasetCityscapes(data.Dataset):
 
     def __init__(self,
-                 opt,
+                 path_to_dataset: Union[str, pathlib.Path],
                  phase: str,
                  data_transform: Callable = None) -> None:
         self.phase = phase
         self.input_list, self.target_list = get_paths_list(
-            opt.path_to_dataset, phase)
+            path_to_dataset, phase)
 
         if len(self.input_list) == 0:
             raise (RuntimeError("Found no images in subfolders of: " +
-                                opt.path_to_dataset + "\n"))
+                                path_to_dataset + "\n"))
         else:
             print("Seems like your path is ok! =) I found {} images!".format(
                 len(self.input_list)))
 
         if len(self.target_list) == 0:
             raise (RuntimeError("Found no images in subfolders of: " +
-                                opt.path_to_dataset + "\n"))
+                                path_to_dataset + "\n"))
         else:
             print("Seems like your path is ok! =) I found {} masks!".format(
                 len(self.target_list)))

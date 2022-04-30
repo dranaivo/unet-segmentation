@@ -68,7 +68,10 @@ def main() -> None:
     loss_fn = nn.CrossEntropyLoss(ignore_index=250)
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
 
-    engine = Engine(args, network, loss_fn, optimizer)
+    # Dataset
+    cityscape_path = args.path_to_dataset
+
+    engine = Engine(args, network, loss_fn, optimizer, cityscape_path)
     if args.train:
         engine.train()
     else:
