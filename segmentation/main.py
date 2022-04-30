@@ -71,7 +71,13 @@ def main() -> None:
     # Dataset
     cityscape_path = args.path_to_dataset
 
-    engine = Engine(args, network, loss_fn, optimizer, cityscape_path)
+    # Training configurations
+    if args.train:
+        phase = "train"
+    if args.test:
+        phase = "val"
+
+    engine = Engine(args, network, loss_fn, optimizer, cityscape_path, phase=phase)
     if args.train:
         engine.train()
     else:

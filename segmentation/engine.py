@@ -20,7 +20,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Engine():
 
-    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset):
+    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, phase="train"):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -29,19 +29,19 @@ class Engine():
             print("Using cuda device.")
             self.network = self.network.to(args.cuda_device)
 
-        if args.train:
+        if phase == "train":
             self.network.train()
             shuffle = True
-            phase = "train"
+            # phase = "train"
             data_transform = transforms.Compose([
                 transforms.ToTensor(),    # divides float version by 255
             ])
             self.description = "[Training]"
             self.global_cm = np.zeros((args.output_nc, args.output_nc))
-        else:
+        elif phase == "val":
             self.network.eval()
             shuffle = False
-            phase = 'val'
+            # phase = 'val'
             data_transform = transforms.Compose([
                 transforms.ToTensor(),    # divides float version by 255
             ])
