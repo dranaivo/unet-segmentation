@@ -21,15 +21,17 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 class Engine():
 
     def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, total_epochs, batch_size, path_to_checkpoints, 
-        phase="train"):
+        n_threads, use_cuda=False, cuda_device=0, phase="train"):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.network = network
         self.path_to_checkpoints = path_to_checkpoints
-        if self.args.cuda:
+        self.cuda = use_cuda
+        self.cuda_device = cuda_device
+        if self.cuda:
             print("Using cuda device.")
-            self.network = self.network.to(args.cuda_device)
+            self.network = self.network.to(self.cuda_device)
 
         if phase == "train":
             self.network.train()
@@ -57,7 +59,7 @@ class Engine():
             self.set_dataloader,
             batch_size=batch_size,
             shuffle=shuffle,
-            num_workers=args.n_threads,
+            num_workers=n_threads,
             drop_last=True)
         print("Dataset size : ", len(self.dataloader))
         self.progress_bar = tqdm.tqdm(range(len(self.dataloader)))
@@ -95,9 +97,9 @@ class Engine():
                 for _ in self.progress_bar:
                     total_iter += 1
                     input, target = data_iter.next()
-                    if self.args.cuda:
-                        input = input.to(self.args.cuda_device)
-                        target = target.to(self.args.cuda_device)
+                    if self.cuda:
+                        input = input.to(self.cuda_device)
+                        target = target.to(self.cuda_device)
 
                     pred = self.network(input)
                     loss = self.loss_fn(pred, target)
@@ -142,9 +144,9 @@ class Engine():
             for _ in self.progress_bar:
                 total_iter += 1
                 input, target = data_iter.next()
-                if self.args.cuda:
-                    input = input.to(self.args.cuda_device)
-                    target = target.to(self.args.cuda_device)
+                if self.cuda:
+                    input = input.to(self.cuda_device)
+                    target = target.to(self.cuda_device)
 
                 pred = self.network(input)
                 target_ = target.cpu().numpy()
