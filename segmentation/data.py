@@ -82,8 +82,6 @@ class DatasetCityscapes(data.Dataset):
 
         self.data_transform = data_transform
 
-        self.phase = phase
-
         self.void_classes = [
             0, 1, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 18, 29, 30, -1
         ]
