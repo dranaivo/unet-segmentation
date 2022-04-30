@@ -11,6 +11,7 @@ import torch.nn as nn
 
 from engine import Engine
 from model import UNet
+from utils import system_setup
 
 
 def parse_arguments() -> argparse.ArgumentParser:
@@ -55,17 +56,9 @@ def parse_arguments() -> argparse.ArgumentParser:
     return parser.parse_args()
 
 
-# System configurations
-def system_setup(args: argparse.ArgumentParser) -> None:
-    random.seed(args.random_seed)
-    np.random.seed(args.random_seed)
-    torch.cuda.manual_seed_all(args.random_seed)
-    torch.manual_seed(args.random_seed)
-
-
 def main() -> None:
     args = parse_arguments()
-    system_setup(args)
+    system_setup(args.random_seed)
 
     # Network
     network = UNet(args.input_nc, args.output_nc)
