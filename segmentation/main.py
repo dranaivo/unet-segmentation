@@ -58,7 +58,7 @@ def parse_arguments() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = parse_arguments()
-    
+
     # System
     system_setup(args.random_seed)
     use_cuda = args.cuda
@@ -67,6 +67,8 @@ def main() -> None:
     # Network
     network = UNet(args.input_nc, args.output_nc)
     path_to_checkpoints = args.path_to_checkpoints
+    save_checkpoints = args.save
+    save_frequency_in_epoch = args.save_epoch
     print(network)
 
     # Loss and Otimizer
@@ -85,8 +87,20 @@ def main() -> None:
     total_epochs = args.total_epochs
     batch_size = args.batch_size
 
-    engine = Engine(args, network, loss_fn, optimizer, cityscape_path, total_epochs, batch_size, path_to_checkpoints, 
-        num_workers_for_loader, use_cuda=use_cuda, cuda_device=cuda_device, phase=phase)
+    engine = Engine(args,
+                    network,
+                    loss_fn,
+                    optimizer,
+                    cityscape_path,
+                    total_epochs,
+                    batch_size,
+                    path_to_checkpoints,
+                    save_checkpoints,
+                    save_frequency_in_epoch,
+                    num_workers_for_loader,
+                    use_cuda=use_cuda,
+                    cuda_device=cuda_device,
+                    phase=phase)
     if args.train:
         engine.train()
     else:

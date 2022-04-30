@@ -20,13 +20,28 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Engine():
 
-    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, total_epochs, batch_size, path_to_checkpoints, 
-        n_threads, use_cuda=False, cuda_device=0, phase="train"):
+    def __init__(self,
+                 args,
+                 network,
+                 loss_fn,
+                 optimizer,
+                 path_to_dataset,
+                 total_epochs,
+                 batch_size,
+                 path_to_checkpoints,
+                 save_checkpoints,
+                 save_frequency_in_epoch,
+                 n_threads,
+                 use_cuda=False,
+                 cuda_device=0,
+                 phase="train"):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.network = network
         self.path_to_checkpoints = path_to_checkpoints
+        self.save_checkpoints = save_checkpoints
+        self.save_frequency_in_epoch = save_frequency_in_epoch
         self.cuda = use_cuda
         self.cuda_device = cuda_device
         if self.cuda:
@@ -55,12 +70,11 @@ class Engine():
         self.set_dataloader = DatasetCityscapes(path_to_dataset=path_to_dataset,
                                                 phase=phase,
                                                 data_transform=data_transform)
-        self.dataloader = torch.utils.data.DataLoader(
-            self.set_dataloader,
-            batch_size=batch_size,
-            shuffle=shuffle,
-            num_workers=n_threads,
-            drop_last=True)
+        self.dataloader = torch.utils.data.DataLoader(self.set_dataloader,
+                                                      batch_size=batch_size,
+                                                      shuffle=shuffle,
+                                                      num_workers=n_threads,
+                                                      drop_last=True)
         print("Dataset size : ", len(self.dataloader))
         self.progress_bar = tqdm.tqdm(range(len(self.dataloader)))
         self.progress_bar.set_description(self.description)
@@ -75,8 +89,8 @@ class Engine():
                 'model_state_dict': self.network.state_dict(),
                 'optim_state_dict': self.optimizer.state_dict(),
             }, filename)
-        shutil.copyfile(filename,
-                        join(self.path_to_checkpoints, 'ckp_latest.pt'))
+        shutil.copyfile(filename, join(self.path_to_checkpoints,
+                                       'ckp_latest.pt'))
 
     def load_checkpoint(self) -> int:
         checkpoint = torch.load(
@@ -125,7 +139,7 @@ class Engine():
                                 'AvAcc', average_acc, 'AvIOU', average_iou)
                             print(message)
 
-                if self.args.save and epoch % self.args.save_epoch == 0:
+                if self.save_checkpoints and epoch % self.save_frequency_in_epoch == 0:
                     filename = join(self.path_to_checkpoints,
                                     'ckp_{}.pt'.format(epoch))
                     self.save_checkpoint(filename, epoch)
@@ -137,7 +151,7 @@ class Engine():
 
     def evaluate(self) -> None:
         with torch.no_grad():
-            self.args.batch_size = 1
+            self.batch_size = 1
             epoch = self.load_checkpoint()
             data_iter = iter(self.dataloader)
             total_iter = 0

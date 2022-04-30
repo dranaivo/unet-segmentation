@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 
+
 def system_setup(random_seed: float) -> None:
     '''System configurations'''
     random.seed(random_seed)
