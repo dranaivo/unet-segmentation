@@ -103,9 +103,11 @@ class Engine():
 
     def train(self) -> None:
         if self.args.resume:
-            epoch = self.load_checkpoint()
+            init_epoch = self.load_checkpoint()
+        else:
+            init_epoch = 0
         try:
-            for epoch in range(self.total_epochs):
+            for epoch in range(init_epoch, self.total_epochs):
                 data_iter = iter(self.dataloader)
                 total_iter = 0
                 for _ in self.progress_bar:
