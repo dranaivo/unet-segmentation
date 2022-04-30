@@ -76,8 +76,10 @@ def main() -> None:
         phase = "train"
     if args.test:
         phase = "val"
+    total_epochs = args.total_epochs
+    batch_size = args.batch_size
 
-    engine = Engine(args, network, loss_fn, optimizer, cityscape_path, phase=phase)
+    engine = Engine(args, network, loss_fn, optimizer, cityscape_path, total_epochs, batch_size, phase=phase)
     if args.train:
         engine.train()
     else:

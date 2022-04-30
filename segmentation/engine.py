@@ -20,7 +20,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Engine():
 
-    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, phase="train"):
+    def __init__(self, args, network, loss_fn, optimizer, path_to_dataset, total_epochs, batch_size, phase="train"):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -53,14 +53,14 @@ class Engine():
                                                 data_transform=data_transform)
         self.dataloader = torch.utils.data.DataLoader(
             self.set_dataloader,
-            batch_size=args.batch_size,
+            batch_size=batch_size,
             shuffle=shuffle,
             num_workers=args.n_threads,
             drop_last=True)
         print("Dataset size : ", len(self.dataloader))
         self.progress_bar = tqdm.tqdm(range(len(self.dataloader)))
         self.progress_bar.set_description(self.description)
-        self.total_epochs = args.total_epochs
+        self.total_epochs = total_epochs
         self.accuracy_metric = AccuracyMetric(global_cm=self.global_cm)
 
     def save_checkpoint(self, filename: str, epoch: int) -> None:
