@@ -1,11 +1,8 @@
 #!/bin/bash
-python ../segmentation/main.py \
+python main.py \
     --train \
-    --total_epochs 8 \
+    --total_epochs 4 \
     --cuda \
     --batch_size 1 \
-    --resume \
-    --save \
-    --save_epoch 2 \
     --path_to_dataset ../unicityscape \
     --path_to_checkpoints ../snapshots

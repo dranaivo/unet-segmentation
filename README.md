@@ -20,7 +20,7 @@ An example of dataset format is inside the docstring of module **`segmentation/d
 You can look at example of usage inside the folder **`scripts/`**.
 Otherwise, display the helper description of the main function to get all arguments :
 ```bash
-# from segmentation/
+# from scripts/
 python main.py --help
 ```
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-python ../segmentation/main.py \
+python main.py \
     --test \
     --batch_size 1 \
     --cuda \

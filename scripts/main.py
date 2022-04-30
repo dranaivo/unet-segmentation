@@ -19,7 +19,7 @@ def parse_arguments() -> argparse.ArgumentParser:
     parser.add_argument('--train', action='store_true', help='train')
     parser.add_argument('--test', action='store_true', help='test')
     parser.add_argument('--path_to_dataset', default="./unicityscape")
-    parser.add_argument('--cuda', action='store_true')
+    parser.add_argument('--cuda', action='store_true', help='Use cuda gpu device')
     parser.add_argument('--lr', default=0.003, type=float, help='Learning rate')
     parser.add_argument('--random_seed',
                         default=0,
