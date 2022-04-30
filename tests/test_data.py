@@ -69,4 +69,28 @@ def test_encoding_segmap_filled_with_valid_classes(path_to_dataset, data_transfo
 
     assert np.array_equal(encoded_segmap, expected_encoded_segmap)
 
-    
+def test_transformed_item_shapes(path_to_dataset, data_transform):
+    phase = "train"
+    dataset = DatasetCityscapes(path_to_dataset, phase, data_transform)
+    input_image = Image.fromarray(
+        np.random.randint(0, 255, size=(600, 600, 3)), mode="RGB")
+    input_mask = Image.fromarray(
+        np.random.randint(0, 33, size=(600, 600)), mode="L")
+
+    output_image, output_mask = dataset.transform(input_image, input_mask)
+    expected_shape = (256, 256)
+
+    assert output_image.size == expected_shape
+    assert output_mask.size == expected_shape
+
+def test_correct_item_shapes(path_to_dataset, data_transform):
+    phase = "train"
+    dataset = DatasetCityscapes(path_to_dataset, phase, data_transform)
+    index = 0
+
+    input_array, target_array = dataset.__getitem__(index)
+    expected_input_shape = torch.Size([3, 256, 256])
+    expected_target_shape = torch.Size([256, 256])
+
+    assert input_array.shape == expected_input_shape
+    assert target_array.shape == expected_target_shape
