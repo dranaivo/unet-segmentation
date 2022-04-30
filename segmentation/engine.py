@@ -12,8 +12,8 @@ import torch
 import tqdm
 import torchvision.transforms as transforms
 
-from data import DatasetCityscapes
-from metrics import AccuracyMetric
+from segmentation.data import DatasetCityscapes
+from segmentation.metrics import AccuracyMetric
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

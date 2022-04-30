@@ -9,9 +9,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from engine import Engine
-from model import UNet
-from utils import system_setup
+from segmentation.engine import Engine
+from segmentation.model import UNet
+from segmentation.utils import system_setup
 
 
 def parse_arguments() -> argparse.ArgumentParser:
