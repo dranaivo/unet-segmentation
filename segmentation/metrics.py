@@ -1,10 +1,13 @@
+'''Module for computing semantic segmentation metrics.'''
+
+from typing import List, Tuple, Union
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
 
 class AccuracyMetric():
 
-    def __init__(self, global_cm):
+    def __init__(self, global_cm: Union[int, np.array]):
         self.global_cm = global_cm
         self.overall_acc = 0
         self.average_acc = 0
@@ -13,7 +16,7 @@ class AccuracyMetric():
     def reset(self):
         pass
 
-    def update_values(self, pred_, target_, labels):
+    def update_values(self, pred_: np.array, target_: np.array, labels: List[int]):
         cm = confusion_matrix(target_.ravel(), pred_.ravel(), labels=labels)
         self.global_cm += cm
         if self.global_cm.sum() > 0:
@@ -39,5 +42,5 @@ class AccuracyMetric():
             self.average_acc = 0
             self.average_iou = 0
 
-    def get_values(self):
+    def get_values(self) -> Tuple[float, float, float]:
         return self.overall_acc, self.average_acc, self.average_iou
