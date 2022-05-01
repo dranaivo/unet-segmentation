@@ -61,7 +61,6 @@ class Engine():
                 transforms.ToTensor(),    # divides float version by 255
             ])
             self.description = "[Training]"
-            self.global_cm = np.zeros((args.output_nc, args.output_nc))
         elif phase == "val":
             self.network.eval()
             shuffle = False
@@ -70,7 +69,8 @@ class Engine():
                 transforms.ToTensor(),    # divides float version by 255
             ])
             self.description = "[Testing]"
-            self.global_cm = 0
+            
+        self.global_cm = np.zeros((args.output_nc, args.output_nc))
 
         self.set_dataloader = DatasetCityscapes(path_to_dataset=path_to_dataset,
                                                 phase=phase,
