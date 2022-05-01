@@ -20,11 +20,14 @@ from PIL import Image
 
 from segmentation.data import DatasetCityscapes
 
+
 @pytest.fixture
 def path_to_dataset():
-    test_data_folder = Path((os.path.abspath(os.path.dirname(__file__))), "test_data")
+    test_data_folder = Path((os.path.abspath(os.path.dirname(__file__))),
+                            "test_data")
     path = Path(test_data_folder, "cityscape")
     return path
+
 
 @pytest.fixture
 def data_transform():
@@ -32,12 +35,15 @@ def data_transform():
         transforms.ToTensor(),
     ])
 
+
 def test_dataset_instanciation(path_to_dataset, data_transform):
     phase = "train"
 
     dataset = DatasetCityscapes(path_to_dataset, phase, data_transform)
 
-def test_encoding_segmap_filled_with_void_classes(path_to_dataset, data_transform):
+
+def test_encoding_segmap_filled_with_void_classes(path_to_dataset,
+                                                  data_transform):
     phase = "train"
     dataset = DatasetCityscapes(path_to_dataset, phase, data_transform)
     segmap_filled_with_void_classes = np.array([
@@ -49,39 +55,36 @@ def test_encoding_segmap_filled_with_void_classes(path_to_dataset, data_transfor
     encoded_segmap = dataset.encode_segmap(segmap_filled_with_void_classes)
     expected_encoded_segmap = np.full_like(encoded_segmap, dataset.ignore_index)
 
-    assert np.array_equal(encoded_segmap, expected_encoded_segmap)   
+    assert np.array_equal(encoded_segmap, expected_encoded_segmap)
 
-def test_encoding_segmap_filled_with_valid_classes(path_to_dataset, data_transform):
+
+def test_encoding_segmap_filled_with_valid_classes(path_to_dataset,
+                                                   data_transform):
     phase = "train"
     dataset = DatasetCityscapes(path_to_dataset, phase, data_transform)
-    segmap_filled_with_valid_classes = np.array([
-        [7, 8, 11],
-        [12, 13, 17],
-        [19, 20, 21]
-    ])
+    segmap_filled_with_valid_classes = np.array([[7, 8, 11], [12, 13, 17],
+                                                 [19, 20, 21]])
 
     encoded_segmap = dataset.encode_segmap(segmap_filled_with_valid_classes)
-    expected_encoded_segmap = np.array([
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8]
-    ])
+    expected_encoded_segmap = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
 
     assert np.array_equal(encoded_segmap, expected_encoded_segmap)
+
 
 def test_transformed_item_shapes(path_to_dataset, data_transform):
     phase = "train"
     dataset = DatasetCityscapes(path_to_dataset, phase, data_transform)
-    input_image = Image.fromarray(
-        np.random.randint(0, 255, size=(600, 600, 3)), mode="RGB")
-    input_mask = Image.fromarray(
-        np.random.randint(0, 33, size=(600, 600)), mode="L")
+    input_image = Image.fromarray(np.random.randint(0, 255, size=(600, 600, 3)),
+                                  mode="RGB")
+    input_mask = Image.fromarray(np.random.randint(0, 33, size=(600, 600)),
+                                 mode="L")
 
     output_image, output_mask = dataset.transform(input_image, input_mask)
     expected_shape = (256, 256)
 
     assert output_image.size == expected_shape
     assert output_mask.size == expected_shape
+
 
 def test_correct_item_shapes(path_to_dataset, data_transform):
     phase = "train"
