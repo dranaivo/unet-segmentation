@@ -6,11 +6,23 @@ Semantic segmentation using **UNet model** on **Cityscape Segmentation dataset**
 **Working environments**:
 ```
 Python 3.6.9
+Cuda 11.0
+Ubuntu 18.10
 ```
+With those settings, I am using `pytorch v1.7.1` to use the GPU.
+
+**Install**
 
 Inside of the `root` directory, execute :
 ```bash
-pip install -r requirements.txt
+# Minimal setup
+pip install .
+
+# or Dev setup
+# pip install .[dev]
+
+# Install pytorch afterwards
+pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
 ## Data

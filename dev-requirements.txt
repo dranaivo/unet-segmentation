@@ -1,0 +1,12 @@
+#-i https://pypi.org/simple
+attrs==21.4.0
+importlib-metadata==4.8.3 ; python_version < '3.8'
+iniconfig==1.1.1
+packaging==21.3
+pluggy==1.0.0
+py==1.11.0
+pyparsing==3.0.8
+pytest==7.0.1
+tomli==1.2.3
+typing-extensions==4.1.1
+zipp==3.6.0
