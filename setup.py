@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 def _load_requirements(path_dir: str,
                        file_name: str = 'requirements.txt',
                        comment_char: str = '#') -> List[str]:
-    """Load requirements from a file"""
+    """Load requirements from a file."""
     with open(os.path.join(path_dir, file_name), 'r') as file:
         lines = [ln.strip() for ln in file.readlines()]
     reqs = []
