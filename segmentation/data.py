@@ -1,5 +1,7 @@
 '''Cityscape segmentation dataset definition.
 
+Contains the dataset reader for any dataset of the same format as 
+Cityscape segmentation.
 An example of dataset structure :
 
 cityscape/
@@ -52,12 +54,28 @@ def dataset_cityscapes_get_rgb(root: str, phase: str) -> List[str]:
 
 
 def get_paths_list(root: str, phase: str) -> Tuple[List[str], List[str]]:
+    '''Returns a list of images path and their corresponding segmaps.'''
     rgb_images = dataset_cityscapes_get_rgb(root, phase)
     return rgb_images, dataset_cityscapes_get_semantics(root, phase)
 
 
 class DatasetCityscapes(data.Dataset):
+    '''Dataset reader for cityscape-like segmentation dataset.
 
+    Attributes:
+        phase: Whether in training or evaluation mode.
+        input_list: 
+        target_list:
+        data_transform: Transformation applied on each images.
+        void_classes: Semantic id which are ignored.
+        valid_classes: Semantic id to consider, ordered.
+        class_map: 
+            A mapping between valid_classes and an increasing integer numbering.
+            For example, if valid_classes = [7, 8], class_map = {"7":0, "8":1}. 
+        no_instances:
+        ignore_index: Default value for ignored classes.
+        ins_ignore_value:
+    '''
     def __init__(self,
                  path_to_dataset: Union[str, pathlib.Path],
                  phase: str,
@@ -96,6 +114,16 @@ class DatasetCityscapes(data.Dataset):
         self.class_map = dict(zip(self.valid_classes, range(19)))
 
     def encode_segmap(self, mask: np.array) -> np.array:
+        '''Transform a mask into a valid one.
+
+        Args:
+            mask: Semantic segmentation map.
+        
+        Returns:
+            A valid mask : all the values belonging to the void_classes are set to 
+            ignore_index, and all values belonging to the valid_classes are set to 
+            their corresponding value in the class_map.
+        '''
         # Put all void classes to zero
         for _voidc in self.void_classes:
             mask[mask == _voidc] = self.ignore_index
@@ -106,6 +134,7 @@ class DatasetCityscapes(data.Dataset):
     def transform(self, image: Image.Image,
                   mask: Image.Image) -> Tuple[Image.Image, Image.Image]:
         from torchvision.transforms import functional as TF
+        '''Resizing, random cropping and data augmentation by random flipping.'''
         # Resize
         resize = transforms.Resize(size=(520, 520))
         image = resize(image)
@@ -129,16 +158,16 @@ class DatasetCityscapes(data.Dataset):
 
         return image, mask
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
         input_img = Image.open(self.input_list[index])
         target = Image.open(self.target_list[index])
 
         input_img, target = self.transform(input_img, target)
         input_tensor = self.data_transform(input_img)
 
-        target_np = torch.LongTensor(
+        target_tensor = torch.LongTensor(
             self.encode_segmap(np.array(target, dtype=np.uint8)))
-        return input_tensor, target_np
+        return input_tensor, target_tensor
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.input_list)
