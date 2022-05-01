@@ -13,7 +13,7 @@ With those settings, I am using `pytorch v1.7.1` to use the GPU.
 
 **Install**
 
-Inside of the `root` directory, execute :
+First clone the repository. Then, inside of the `root` directory, execute :
 ```bash
 # Minimal setup
 pip install .
