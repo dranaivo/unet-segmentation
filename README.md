@@ -5,9 +5,11 @@ Semantic segmentation using **UNet model** on **Cityscape Segmentation dataset**
 ## Installation
 **Working environments**:
 ```
-Python 3.6.9
-Cuda 11.0
-Ubuntu 18.10
+python 3.6.9
+pip 21.3.1
+setuptools 59.6.0
+cuda 11.0
+ubuntu 18.10
 ```
 With those settings, I am using `pytorch v1.7.1` to use the GPU.
 
