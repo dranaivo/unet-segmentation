@@ -1,10 +1,18 @@
-'''
-Training and Evaluation procedures.
-'''
+'''Training and Evaluation procedures.
 
+The Engine class is responsible for launching a session, be it for
+training or for evaluation. Each session will mainly include :
+    - A model, and its specific loss function and optimizer,
+    - The path to the dataset, 
+    - All training / evaluation configurations (epoch, batch_size, ...)
+    - Some system configurations (whether to use the gpu)
+'''
+import argparse
 import glob
 from os.path import join
+import pathlib
 import shutil
+from typing import Union
 
 import numpy as np
 from PIL import ImageFile
@@ -21,20 +29,20 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 class Engine():
 
     def __init__(self,
-                 args,
-                 network,
-                 loss_fn,
-                 optimizer,
-                 path_to_dataset,
-                 total_epochs,
-                 batch_size,
-                 path_to_checkpoints,
-                 save_checkpoints,
-                 save_frequency_in_epoch,
-                 n_threads,
-                 use_cuda=False,
-                 cuda_device=0,
-                 phase="train"):
+                 args: argparse.ArgumentParser,
+                 network: torch.nn.Module,
+                 loss_fn: torch.nn.Module,
+                 optimizer: torch.optim.Optimizer,
+                 path_to_dataset: Union[str, pathlib.Path],
+                 total_epochs: int,
+                 batch_size: int,
+                 path_to_checkpoints: str,
+                 save_checkpoints: bool,
+                 save_frequency_in_epoch: int,
+                 n_threads: int,
+                 use_cuda: False = False,
+                 cuda_device: int = 0,
+                 phase: str = "train"):
         self.args = args
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -69,7 +77,7 @@ class Engine():
                 transforms.ToTensor(),    # divides float version by 255
             ])
             self.description = "[Testing]"
-            
+
         self.global_cm = np.zeros((args.output_nc, args.output_nc))
 
         self.set_dataloader = DatasetCityscapes(path_to_dataset=path_to_dataset,
@@ -107,6 +115,14 @@ class Engine():
         return epoch
 
     def train(self) -> None:
+        '''Training session.
+
+        For each step (or iteration) in each epoch:
+            - get images and target segmaps,
+            - forward, then compute the loss,
+            - compute the gradients, then apply the updates,
+            - compute the metrics, if applicable.
+        '''
         if self.resume:
             init_epoch = self.load_checkpoint()
         else:
@@ -157,6 +173,16 @@ class Engine():
             self.save_checkpoint(filename, epoch)
 
     def evaluate(self) -> None:
+        '''Evaluation session.
+
+        A checkpoint file inside of the folder path_to_checkpoints is needed to run this 
+        session. This checkpoint file must follow the pattern "*latest*.pt". 
+        For each step (or iteration):
+            - get images and target segmaps,
+            - forward, then compute the loss,
+            - compute the gradients, then apply the updates,
+            - compute the metrics, if applicable.                
+        '''
         with torch.no_grad():
             self.batch_size = 1
             epoch = self.load_checkpoint()
