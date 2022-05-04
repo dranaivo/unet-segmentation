@@ -11,7 +11,7 @@ setuptools 59.6.0
 cuda 11.0
 ubuntu 18.10
 ```
-With those settings, I am using `pytorch v1.7.1` to use the GPU.
+>With those settings, I am using `pytorch v1.7.1` to use the GPU.
 
 **Install**
 
@@ -22,10 +22,9 @@ pip install .
 
 # or Dev setup
 # pip install .[dev]
-
-# Install pytorch afterwards
-pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
 ```
+
+Finally, install `pytorch v1.7.1` and `torchvision v0.8.2` using **`pip`** (instructions on the [official website](https://pytorch.org/get-started/previous-versions/)).
 
 ## Data
 An example of dataset format is inside the docstring of module **`segmentation/data.py`**
