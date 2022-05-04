@@ -57,6 +57,8 @@ class Engine():
         self.save_frequency_in_epoch = save_frequency_in_epoch
         self.cuda = use_cuda
         self.cuda_device = cuda_device
+        if not torch.cuda.is_available():
+            self.cuda = False
         if self.cuda:
             print("Using cuda device.")
             self.network = self.network.to(self.cuda_device)
