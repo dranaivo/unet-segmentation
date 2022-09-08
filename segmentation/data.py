@@ -34,6 +34,7 @@ from PIL import Image, ImageFile
 import torch
 import torch.utils.data as data
 import torchvision.transforms as transforms
+from torchvision.transforms import functional as TF
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -133,7 +134,7 @@ class DatasetCityscapes(data.Dataset):
 
     def transform(self, image: Image.Image,
                   mask: Image.Image) -> Tuple[Image.Image, Image.Image]:
-        from torchvision.transforms import functional as TF
+   
         '''Resizing, random cropping and data augmentation by random flipping.'''
         # Resize
         resize = transforms.Resize(size=(520, 520))
